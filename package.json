@@ -4,10 +4,19 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "tsx watch src/app.ts",
+    "build": "rimraf ./dist && tsc",
+    "start": "npm run build && node dist/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "rimraf": "^6.1.4",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
 }
