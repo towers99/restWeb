@@ -18,3 +18,6 @@
 1. "exclude": ["node_modules","dist" ],
 2. "include": ["src"],
 3. Agrega "node" a type
+
+# Ejecutar comando Docker
+1. ```docker compose up -d```, para ejecutar el archivo yml
