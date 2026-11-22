@@ -1,81 +1,93 @@
 import type { Request, Response } from "express"
-
-
-const todos = [
-    { id: 1, text: 'Buy Milk', createAr: new Date() },
-    { id: 2, text: 'Buy Coco', createAr: null },
-    { id: 3, text: 'buy Cooket', createAr: new Date() },
-];
+import { prisma } from "../../data/postgres/index.js";
+import { CreateTodoDto, UpdateTodoDto } from "../../domain/dtos/index.js";
 
 export class TodosController {
 
     constructor() { }
 
-    public getTodos = (req: Request, res: Response) => {
-        return res.json(todos)
+    public getTodos = async (req: Request, res: Response) => {
+        const todos = await prisma.todo.findMany()
+        res.status(200).json(todos);
     };
 
-    public getTodoById = (req: Request, res: Response) => {
+    public getTodoById = async(req: Request, res: Response) => {
 
         if (!req.params.id) { return res.status(404).json({ error: 'El parametro es obligatorio' }) }
 
         const id = +req.params.id
         if (isNaN(id)) { return res.status(400).json({ error: 'El argumento añadido no es un numero' }) }
 
-        const todo = todos.find(todo => todo.id === id)
+        const todo = await prisma.todo.findUniqueOrThrow({
+
+            where: {
+                id
+            }
+
+        })
+
         todo ? res.json(todo) : res.status(404).json({ error: 'numero no encontrado' });
 
     };
 
-    public createTodo = (req: Request, res: Response) => {
+    public createTodo = async (req: Request, res: Response) => {
 
-        const { text } = req.body;
-        if (!text) return res.status(400).json('Debes agregar texto');
+        //Validacion de que venga data en el body
+        const [error, createTodoDto] = CreateTodoDto.create(req.body);
+        if (error) return res.status(400).json({error : 'Text property is required'})
 
-        const newTodo = {
-            id: todos.length + 1,
-            text: text,
-            createAr: null
-        }
+        //Manera de agregar datos a la Db
+        const todo = await prisma.todo.create({
+            data: createTodoDto!
+        });
 
-        todos.push(newTodo)
-
-        res.json(newTodo)
+        //Retornamos lo que agregamos
+        return res.json(todo)
 
     };
 
-    public updateTodo = (req: Request, res: Response) => {
+    public updateTodo = async(req: Request, res: Response) => {
+
+     
 
         if (!req.params.id) { return res.status(404).json({ error: 'El parametro es obligatorio' }) }
 
         const id = +req.params.id
-        if (isNaN(id)) { return res.status(400).json({ error: 'El argumento añadido no es un numero' }) }
 
-        const todo = todos.find(todo => todo.id === id)
+        const [error, updateTodoDto] = UpdateTodoDto.create({...req.body, id})
+
+        if(error) return res.status(400).json({error});
+
+
+        const todo = await prisma.todo.update({
+            where: {
+                id
+            },
+            data: updateTodoDto!.values
+        });
+
         if (!todo) { return res.status(400).json({ error: 'numero no encontrado' }) }
 
-        const { text, createAt } = req.body;
-        if (!text) return res.status(400).json({ error: 'Text property is required' })
+        return res.json(todo);
 
-        todo.text = text || todo.text;
-        todo.createAr = createAt || todo.createAr;
-
-        res.json(todo);
     };
 
 
-    public deleteTodo = (req: Request, res: Response) => {
+    public deleteTodo = async(req: Request, res: Response) => {
 
         if (!req.params.id) { return res.status(404).json({ error: 'El parametro es obligatorio' }) }
 
         const id = +req.params.id
         if (isNaN(id)) { return res.status(400).json({ error: 'El argumento añadido no es un numero' }) }
 
-        const todo = todos.find(todo => todo.id === id)
-        if (!todo) { return res.status(404).json({ error: 'numero no encontrado' }) }
+        const todo = await prisma.todo.delete({
+            where: {
+                id
+            }
+        });
 
+        if (!todo) { return res.status(404).json({ error: 'numero no encontrado o ya fue eliminado' }) }
 
-        todos.splice(todos.indexOf(todo), 1)
         res.status(200).json('Todo eliminado')
 
     };

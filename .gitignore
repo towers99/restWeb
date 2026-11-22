@@ -1,4 +1,17 @@
+# Dependencias
 node_modules/
+
+# Compilación
 dist/
-.evn
+
+# Variables de entorno
+.env
+
+# Archivos de claves
 keys/
+
+# Datos locales de postgres
+postgres/
+
+# Cliente generado por Prisma (si lo generas manualmente)
+src/generated/prisma/
