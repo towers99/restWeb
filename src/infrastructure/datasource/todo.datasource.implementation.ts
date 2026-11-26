@@ -1,4 +1,5 @@
 import { prisma } from "../../data/postgres/index.js";
+import { CustomError } from "../../domain/index.js";
 import { TodoEntity, type CreateTodoDto, type TodoDatasource, type UpdateTodoDto } from "../../domain/index.js";
 
 
@@ -26,7 +27,7 @@ export class TodoDataSourceImpl implements TodoDatasource {
 
         });
 
-        if (!todo) throw `Todo with id ${id} not found`;
+        if (!todo) throw new CustomError(`Todo with id ${id} not found`, 404);
         return TodoEntity.fromObject(todo);
 
     };
