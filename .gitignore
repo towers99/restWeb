@@ -15,3 +15,5 @@ postgres/
 
 # Cliente generado por Prisma (si lo generas manualmente)
 src/generated/prisma/
+
+.env.test
